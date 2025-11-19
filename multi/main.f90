@@ -54,9 +54,9 @@ double precision, parameter :: beta(3)  = (/ 0.d0,       -17.d0/60.d0,  -5.d0/12
 !real(kind=8), parameter :: beta(3)   = (/ 0.0d0, -0.122243120495896d0, -0.377756879504104d0 /)
 
 ! Enable or disable phase field 
-#define phiflag 0
+#define phiflag 1
 ! Enable or disable temperature field
-#define thetaflag 1
+#define thetaflag 0
 
 !########################################################################################################################################
 ! 1. INITIALIZATION OF MPI AND cuDECOMP AUTOTUNING : START
@@ -743,9 +743,9 @@ do t=tstart,tfin
                if (kg .eq. 1)    v(i,j,k-1)=  -v(i,j,k)  !  mean value between kg and kg-1 (wall) equal to zero  
                if (kg .eq. 1)    w(i,j,k)=0.d0           ! w point is at the wall
                ! top wall
-               if (kg .eq. nz)   u(i,j,k+1)=  -u(i,j,k)  !  mean value between kg and kg+1 (wall) equal to zero 
-               if (kg .eq. nz)   v(i,j,k+1)=  -v(i,j,k)  !  mean value between kg and kg+1 (wall) equal to zero 
-               if (kg .eq. nz+1) w(i,j,k)=0.d0           ! w point (nz+1) is at the wall
+               if (kg .eq. nz)   u(i,j,k+1)=   u(i,j,k)  !  mean value between kg and kg+1 (wall) equal to zero 
+               if (kg .eq. nz)   v(i,j,k+1)=   v(i,j,k)  !  mean value between kg and kg+1 (wall) equal to zero 
+               if (kg .eq. nz)   w(i,j,k+1)=   w(i,j,k)  ! w point (nz+1) is at the wall
             enddo
          enddo
       enddo  
@@ -946,9 +946,9 @@ do t=tstart,tfin
             if (kg .eq. 1)    v(i,j,k-1) =  -v(i,j,k)  !  mean value between kg and kg-1 (wall) equal to zero  
             if (kg .eq. 1)    w(i,j,k)    =   0.d0       !  w point is at the wall
             ! top wall
-            if (kg .eq. nz)   u(i,j,k+1)=  -u(i,j,k)  !  mean value between kg and kg+1 (wall) equal to zero 
-            if (kg .eq. nz)   v(i,j,k+1)=  -v(i,j,k)  !  mean value between kg and kg+1 (wall) equal to zero 
-            if (kg .eq. nz+1) w(i,j,k)=0.d0             !  w point (nz+1) is at the wall
+            if (kg .eq. nz)   u(i,j,k+1)=   u(i,j,k)  !  mean value between kg and kg+1 (wall) equal to zero 
+            if (kg .eq. nz)   v(i,j,k+1)=   v(i,j,k)  !  mean value between kg and kg+1 (wall) equal to zero 
+            if (kg .eq. nz)   w(i,j,k+1)=   w(i,j,k)  !  outled BCs
             umax=max(umax,u(i,j,k))
             vmax=max(vmax,v(i,j,k))
             wmax=max(wmax,w(i,j,k))
