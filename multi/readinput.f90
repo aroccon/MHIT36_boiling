@@ -27,8 +27,11 @@ read(55,*) inflow
 read(55,*) inphi
 read(55,*) intheta
 read(55,*) dt
-read(55,*) mu
-read(55,*) rho
+read(55,*) mul
+read(55,*) muv
+read(55,*) rhol
+read(55,*) rhov
+read(55,*) vaprate
 ! forcing parameters
 read(55,*) gradpx
 read(55,*) gradpy

@@ -293,7 +293,7 @@ if (rank.eq.0) write(*,*) 'Initialize phase field (fresh start)'
          do j = 1+halo_ext, piX%shape(2)-halo_ext
          jg = piX%lo(2) + j - 1 - halo_ext
             do i = 1, piX%shape(1)
-                pos=(x(i)-lx/2)**2d0 +  (y(jg)-ly/2)**2d0 + (z(kg)-lz/2)**2d0
+                pos=(x(i)-lx/2)**2d0 +  (y(jg)-ly/2)**2d0 + (z(kg))**2d0
                 phi(i,j,k) = 0.5d0*(1.d0-tanh((sqrt(pos)-radius)/2/eps))
             enddo
         enddo
@@ -492,7 +492,10 @@ do t=tstart,tfin
          enddo
       enddo
    enddo
-    !$acc end kernels
+   !!!!!!!!!!!! ADD HERE SOURCE TERM FROM VAPORIZATION
+   !$acc end kernels
+
+
 
    ! Get phi at n+1 
    !$acc kernels
@@ -829,20 +832,11 @@ do t=tstart,tfin
          b(0) = -1.d0*dzi(1)*dzi(1) - kx_d(ig)*kx_d(ig) - ky_d(jg)*ky_d(jg)
          c(0) =  1.d0*dzi(1)*dzi(1)
          d(0) =  0.0d0
-         ! Neumann BC at top
+         ! Imposed pressure at the top
          a(nz+1) =  1.0d0*dzi(nz+1)*dzi(nz+1)
-         b(nz+1) = -1.0d0*dzi(nz+1)*dzi(nz+1) - kx_d(ig)*kx_d(ig) - ky_d(jg)*ky_d(jg)
+         b(nz+1) =  1.0d0*dzi(nz+1)*dzi(nz+1) - kx_d(ig)*kx_d(ig) - ky_d(jg)*ky_d(jg)
          c(nz+1) =  0.0d0
-         d(nz+1) =  0.0d0
-         ! Enforce pressure at one point? one interior point, avodig messing up with BC
-         ! need brackets?
-         if (ig == 1 .and. jg == 1) then
-            a(1) = 0.d0
-            b(1) = 1.d0
-            c(1) = 0.d0
-            d(1) = 0.d0
-         end if
-         ! Forward elimination (Thomas)
+         d(nz+1) =  0.0d0 ! 0 pressure at the top
          !$acc loop seq
          do k = 1, nz+1
             factor = a(k)/b(k-1)
