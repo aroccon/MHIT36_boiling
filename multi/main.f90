@@ -488,14 +488,12 @@ do t=tstart,tfin
                                                (0.25d0*(1.d0-tanh_psi(i,jp,k)*tanh_psi(i,jp,k))*normy(i,jp,k) - &
                                                 0.25d0*(1.d0-tanh_psi(i,jm,k)*tanh_psi(i,jm,k))*normy(i,jm,k))*0.5*dyi + &
                                                (0.25d0*(1.d0-tanh_psi(i,j,kp)*tanh_psi(i,j,kp))*normz(i,j,kp) - &
-                                                0.25d0*(1.d0-tanh_psi(i,j,km)*tanh_psi(i,j,km))*normz(i,j,km))/(z(kg+1)-z(kg-1))) 
+                                                0.25d0*(1.d0-tanh_psi(i,j,km)*tanh_psi(i,j,km))*normz(i,j,km))/(z(kg+1)-z(kg-1))) + &
+                                               + phi(i,j,k)*(1.d0-phi(i,j,k))*epsi*vaprate*rhov ! vaporization source term
          enddo
       enddo
    enddo
-   !!!!!!!!!!!! ADD HERE SOURCE TERM FROM VAPORIZATION
    !$acc end kernels
-
-
 
    ! Get phi at n+1 
    !$acc kernels
@@ -684,18 +682,13 @@ do t=tstart,tfin
                jm=j-1
                km=k-1
                if (im .lt. 1) im=nx
-               #if thetaflag == 0 
                ! Add surface tension force only (ACDI only)
-               rhsu(i,j,k)=rhsu(i,j,k) + 0.5d0*(fxst(im,j,k)+fxst(i,j,k))*rhoi
-               rhsv(i,j,k)=rhsv(i,j,k) + 0.5d0*(fyst(i,jm,k)+fyst(i,j,k))*rhoi
-               rhsw(i,j,k)=rhsw(i,j,k) + 0.5d0*(fzst(i,j,km)+fzst(i,j,k))*rhoi
-               #elif thetaflag == 1
-               ! Add here also buoyancy force if temperature is active (case ACDI + temperature)
-               rhsw(i,j,k)=rhsw(i,j,k) + alphag*0.5d0*(theta(i,j,km)+theta(i,j,k))
-               #endif
-               u(i,j,k) = u(i,j,k) + dt*alpha(stage)*rhsu(i,j,k) + dt*beta(stage)*rhsu_o(i,j,k)! -dt*(alpha(stage)+beta(stage))*rho*(p(i,j,k)-p(im,j,k))*dxi
-               v(i,j,k) = v(i,j,k) + dt*alpha(stage)*rhsv(i,j,k) + dt*beta(stage)*rhsv_o(i,j,k)! -dt*(alpha(stage)+beta(stage))*rho*(p(i,j,k)-p(i,jm,k))*dyi
-               w(i,j,k) = w(i,j,k) + dt*alpha(stage)*rhsw(i,j,k) + dt*beta(stage)*rhsw_o(i,j,k)! -dt*(alpha(stage)+beta(stage))*rho*(p(i,j,k)-p(i,j,km))*dzi
+               rhsu(i,j,k)=rhsu(i,j,k) + 0.5d0*(fxst(im,j,k)+fxst(i,j,k))
+               rhsv(i,j,k)=rhsv(i,j,k) + 0.5d0*(fyst(i,jm,k)+fyst(i,j,k))
+               rhsw(i,j,k)=rhsw(i,j,k) + 0.5d0*(fzst(i,j,km)+fzst(i,j,k))
+               u(i,j,k) = u(i,j,k) + dt*alpha(stage)*rhsu(i,j,k) + dt*beta(stage)*rhsu_o(i,j,k)
+               v(i,j,k) = v(i,j,k) + dt*alpha(stage)*rhsv(i,j,k) + dt*beta(stage)*rhsv_o(i,j,k)
+               w(i,j,k) = w(i,j,k) + dt*alpha(stage)*rhsw(i,j,k) + dt*beta(stage)*rhsw_o(i,j,k)
                rhsu_o(i,j,k)=rhsu(i,j,k)
                rhsv_o(i,j,k)=rhsv(i,j,k)
                rhsw_o(i,j,k)=rhsw(i,j,k)
@@ -776,9 +769,10 @@ do t=tstart,tfin
             kp=k+1
             kg = piX%lo(3)  + k - 1 - halo_ext
             if (ip > nx) ip=1
-            rhsp(i,j,k) =                    (rho*dxi/dt)*(u(ip,j,k)-u(i,j,k))
-            rhsp(i,j,k) = rhsp(i,j,k) +      (rho*dyi/dt)*(v(i,jp,k)-v(i,j,k))
-            rhsp(i,j,k) = rhsp(i,j,k) + (rho*dzci(kg)/dt)*(w(i,j,kp)-w(i,j,k))
+            rhsp(i,j,k) =                    (dxi/dt)*(u(ip,j,k)-u(i,j,k))
+            rhsp(i,j,k) = rhsp(i,j,k) +      (dyi/dt)*(v(i,jp,k)-v(i,j,k))
+            rhsp(i,j,k) = rhsp(i,j,k) + (dzci(kg)/dt)*(w(i,j,kp)-w(i,j,k))
+            rhsp(i,j,k) = rhsp(i,j,k) - *(1/rhov-1/rhol);
          enddo
       enddo
    enddo
