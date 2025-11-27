@@ -606,16 +606,34 @@ do t=tstart,tfin
                kg=piX%lo(3) + k - 1 - halo_ext
                if (ip .gt. nx) ip=1  
                if (im .lt. 1) im=nx
-               !  compute the products (conservative form)
-               h11 = 0.25d0*((u(ip,j,k)+u(i,j,k))*(u(ip,j,k)+u(i,j,k))     - (u(i,j,k)+u(im,j,k))*(u(i,j,k)+u(im,j,k)))*dxi
-               h12 = 0.25d0*((u(i,jp,k)+u(i,j,k))*(v(i,jp,k)+v(im,jp,k))   - (u(i,j,k)+u(i,jm,k))*(v(i,j,k)+v(im,j,k)))*dyi
-               h13 = 0.25d0*((u(i,j,kp)+u(i,j,k))*(w(i,j,kp)+w(im,j,kp))   - (u(i,j,k)+u(i,j,km))*(w(i,j,k)+w(im,j,k)))*dzci(kg) ! divide by cell height
-               h21 = 0.25d0*((u(ip,j,k)+u(ip,jm,k))*(v(ip,j,k)+v(i,j,k))   - (u(i,j,k)+u(i,jm,k))*(v(i,j,k)+v(im,j,k)))*dxi
-               h22 = 0.25d0*((v(i,jp,k)+v(i,j,k))*(v(i,jp,k)+v(i,j,k))     - (v(i,j,k)+v(i,jm,k))*(v(i,j,k)+v(i,jm,k)))*dyi
-               h23 = 0.25d0*((w(i,j,kp)+w(i,jm,kp))*(v(i,j,kp)+v(i,j,k))   - (w(i,j,k)+w(i,jm,k))*(v(i,j,k)+v(i,j,km)))*dzci(kg) ! divide by cell height
-               h31 = 0.25d0*((w(ip,j,k)+w(i,j,k))*(u(ip,j,k)+u(ip,j,km))   - (w(i,j,k)+w(im,j,k))*(u(i,j,k)+u(i,j,km)))*dxi
-               h32 = 0.25d0*((v(i,jp,k)+v(i,jp,km))*(w(i,jp,k)+w(i,j,k))   - (v(i,j,k)+v(i,j,km))*(w(i,j,k)+w(i,jm,k)))*dyi
-               h33 = 0.25d0*((w(i,j,kp)+w(i,j,k))*(w(i,j,kp)+w(i,j,k))     - (w(i,j,k)+w(i,j,km))*(w(i,j,k)+w(i,j,km)))*dzi(kg) ! divie by distance between centers
+               !  compute the products (conservative form) rho*u*u 
+               rhoxp=rhol*phi(i,j,k)    + rhov*(1.d0-phi(i,j,k))
+               rhoxm=rhol*phi(im,j,k)   + rhov*(1.d0-phi(im,j,k))
+               h11 = 0.25d0*(rhoxp*(u(ip,j,k)+u(i,j,k))*(u(ip,j,k)+u(i,j,k))     - rhoxm*(u(i,j,k)+u(im,j,k))*(u(i,j,k)+u(im,j,k)))*dxi
+               rhoxp=rhol*0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,jp,k)+phi(im,jp,k))   + rhov*0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,jp,k)+phi(im,jp,k))
+               rhoxm=rhol*0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,jm,k)+phi(im,jm,k))   + rhov*0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,jm,k)+phi(im,jm,k))
+               h12 = 0.25d0*(rhoxp*(u(i,jp,k)+u(i,j,k))*(v(i,jp,k)+v(im,jp,k))   - rhoxm*(u(i,j,k)+u(i,jm,k))*(v(i,j,k)+v(im,j,k)))*dyi
+               rhoxp=rhol*0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,j,kp)+phi(im,j,kp))   + rhov*0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,j,kp)+phi(im,j,kp))
+               rhoxm=rhol*0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,j,km)+phi(im,j,km))   + rhov*0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,j,km)+phi(im,j,km))
+               h13 = 0.25d0*(rhoxp*(u(i,j,kp)+u(i,j,k))*(w(i,j,kp)+w(im,j,kp))   - rhoxm*(u(i,j,k)+u(i,j,km))*(w(i,j,k)+w(im,j,k)))*dzci(kg) ! divide by cell height
+               rhoxp=rhol*0.25d0*(phi(i,j,k)+phi(i,jp,k)+phi(ip,jp,k)+phi(ip,j,k))   + rhov*0.25d0*(phi(i,j,k)+phi(i,jp,k)+phi(ip,jp,k)+phi(ip,j,k))
+               rhoxm=rhol*0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(ip,jm,k)+phi(ip,j,k))   + rhov*0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(ip,jm,k)+phi(ip,j,k))
+               h21 = 0.25d0*(rhoxp*(u(ip,j,k)+u(ip,jm,k))*(v(ip,j,k)+v(i,j,k))   - rhoxm*(u(i,j,k)+u(i,jm,k))*(v(i,j,k)+v(im,j,k)))*dxi
+               rhoxp=rhol*phi(i,j,k)    + rhov*(1.d0-phi(i,j,k))
+               rhoxm=rhol*phi(i,jm,k)   + rhov*(1.d0-phi(i,jm,k))
+               h22 = 0.25d0*(rhoxp*(v(i,jp,k)+v(i,j,k))*(v(i,jp,k)+v(i,j,k))     - rhoxm*(v(i,j,k)+v(i,jm,k))*(v(i,j,k)+v(i,jm,k)))*dyi
+               rhoxp=rhol*0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(i,jm,kp)+phi(i,j,kp))   + rhov*0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(i,jm,kp)+phi(i,j,kp))
+               rhoxm=rhol*0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(i,jm,km)+phi(i,j,km))   + rhov*0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(i,jm,km)+phi(i,j,km ))
+               h23 = 0.25d0*(rhoxp*(w(i,j,kp)+w(i,jm,kp))*(v(i,j,kp)+v(i,j,k))   - rhoxm*(w(i,j,k)+w(i,jm,k))*(v(i,j,k)+v(i,j,km)))*dzci(kg) ! divide by cell height
+               rhoxp=rhol*0.25d0*(phi(i,j,k)+phi(i,j,km)+phi(ip,j,k)+phi(ip,j,km))   + rhov*0.25d0*(phi(i,j,k)+phi(i,j,km)+phi(ip,j,k)+phi(ip,j,km)) 
+               rhoxm=rhol*0.25d0*(phi(i,j,k)+phi(i,j,km)+phi(im,j,k)+phi(im,j,km))   + rhov*0.25d0*(phi(i,j,k)+phi(i,j,km)+phi(im,j,k)+phi(im,j,km ))
+               h31 = 0.25d0*(rhoxp*(w(ip,j,k)+w(i,j,k))*(u(ip,j,k)+u(ip,j,km))   - rhoxm*(w(i,j,k)+w(im,j,k))*(u(i,j,k)+u(i,j,km)))*dxi
+               rhoxp=rhol*0.25d0*(phi(i,j,k)+phi(i,jp,k)+phi(i,jp,km)+phi(i,j,km))   + rhov*0.25d0*(phi(i,j,k)+phi(i,jp,k)+phi(i,jp,km)+phi(i,j,km)) 
+               rhoxm=rhol*0.25d0*(phi(i,j,k)+phi(i,j,km)+phi(im,j,k)+phi(im,j,km))   + rhov*0.25d0*(phi(i,j,k)+phi(i,j,km)+phi(im,j,k)+phi(im,j,km ))
+               h32 = 0.25d0*(rhoxp*(v(i,jp,k)+v(i,jp,km))*(w(i,jp,k)+w(i,j,k))   - rhoxm*(v(i,j,k)+v(i,j,km))*(w(i,j,k)+w(i,jm,k)))*dyi
+               rhoxp=rhol*phi(i,j,k)    + rhov*(1.d0-phi(i,j,k))
+               rhoxm=rhol*phi(i,j,km)   + rhov*(1.d0-phi(i,j,km))
+               h33 = 0.25d0*(rhoxp*(w(i,j,kp)+w(i,j,k))*(w(i,j,kp)+w(i,j,k))     - rhoxm*(w(i,j,k)+w(i,j,km))*(w(i,j,k)+w(i,j,km)))*dzi(kg) ! divie by distance between centers
                rhsu(i,j,k)=-(h11+h12+h13)
                rhsv(i,j,k)=-(h21+h22+h23)
                rhsw(i,j,k)=-(h31+h32+h33)
@@ -701,11 +719,6 @@ do t=tstart,tfin
       do k=1+halo_ext, piX%shape(3)-halo_ext
          do j=1+halo_ext, piX%shape(2)-halo_ext
             do i=1,nx
-               ! Add here also buoyancy force if temperature is active (case NS + temperature)
-               #if thetaflag == 1
-               km=k-1
-               rhsw(i,j,k)=rhsw(i,j,k) + alphag*0.5d0*(theta(i,j,km)+theta(i,j,k))
-               #endif
                u(i,j,k) = u(i,j,k) + dt*alpha(stage)*rhsu(i,j,k) + dt*beta(stage)*rhsu_o(i,j,k)
                v(i,j,k) = v(i,j,k) + dt*alpha(stage)*rhsv(i,j,k) + dt*beta(stage)*rhsv_o(i,j,k)
                w(i,j,k) = w(i,j,k) + dt*alpha(stage)*rhsw(i,j,k) + dt*beta(stage)*rhsw_o(i,j,k)
