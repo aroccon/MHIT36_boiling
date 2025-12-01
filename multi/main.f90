@@ -489,7 +489,7 @@ do t=tstart,tfin
                                                 0.25d0*(1.d0-tanh_psi(i,jm,k)*tanh_psi(i,jm,k))*normy(i,jm,k))*0.5*dyi + &
                                                (0.25d0*(1.d0-tanh_psi(i,j,kp)*tanh_psi(i,j,kp))*normz(i,j,kp) - &
                                                 0.25d0*(1.d0-tanh_psi(i,j,km)*tanh_psi(i,j,km))*normz(i,j,km))/(z(kg+1)-z(kg-1))) + &
-                                               + phi(i,j,k)*(1.d0-phi(i,j,k))*epsi*vaprate*rhov ! vaporization source term
+                                               + phi(i,j,k)*(1.d0-phi(i,j,k))*epsi*vaprate/rhov ! vaporization source term
          enddo
       enddo
    enddo
@@ -754,7 +754,7 @@ do t=tstart,tfin
                ! top wall
                if (kg .eq. nz)   u(i,j,k+1)=   u(i,j,k)  !  mean value between kg and kg+1 (wall) equal to zero 
                if (kg .eq. nz)   v(i,j,k+1)=   v(i,j,k)  !  mean value between kg and kg+1 (wall) equal to zero 
-               if (kg .eq. nz)   w(i,j,k+1)=   w(i,j,k)  ! w point (nz+1) is at the wall
+               if (kg .eq. nz)   w(i,j,k+1)=   w(i,j,k)  !  w point (nz+1) is at the wall
             enddo
          enddo
       enddo  
@@ -785,7 +785,7 @@ do t=tstart,tfin
             rhsp(i,j,k) =                    (dxi/dt)*(u(ip,j,k)-u(i,j,k))
             rhsp(i,j,k) = rhsp(i,j,k) +      (dyi/dt)*(v(i,jp,k)-v(i,j,k))
             rhsp(i,j,k) = rhsp(i,j,k) + (dzci(kg)/dt)*(w(i,j,kp)-w(i,j,k))
-            rhsp(i,j,k) = rhsp(i,j,k) - *(1/rhov-1/rhol);
+            rhsp(i,j,k) = rhsp(i,j,k) - phi(i,j,k)*(1.d0-phi(i,j,k))*epsi*vaprate*(1.d0-rhov/rhol)
          enddo
       enddo
    enddo
