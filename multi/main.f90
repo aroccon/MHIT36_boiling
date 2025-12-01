@@ -610,26 +610,26 @@ do t=tstart,tfin
                rhoxp=rhol*phi(i,j,k)    + rhov*(1.d0-phi(i,j,k))
                rhoxm=rhol*phi(im,j,k)   + rhov*(1.d0-phi(im,j,k))
                h11 = 0.25d0*(rhoxp*(u(ip,j,k)+u(i,j,k))*(u(ip,j,k)+u(i,j,k))     - rhoxm*(u(i,j,k)+u(im,j,k))*(u(i,j,k)+u(im,j,k)))*dxi
-               rhoxp=rhol*0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,jp,k)+phi(im,jp,k))   + rhov*0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,jp,k)+phi(im,jp,k))
-               rhoxm=rhol*0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,jm,k)+phi(im,jm,k))   + rhov*0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,jm,k)+phi(im,jm,k))
+               rhoxp=rhol*0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,jp,k)+phi(im,jp,k))   + rhov*(1.d0-0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,jp,k)+phi(im,jp,k)))
+               rhoxm=rhol*0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,jm,k)+phi(im,jm,k))   + rhov*(1.d0-0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,jm,k)+phi(im,jm,k)))
                h12 = 0.25d0*(rhoxp*(u(i,jp,k)+u(i,j,k))*(v(i,jp,k)+v(im,jp,k))   - rhoxm*(u(i,j,k)+u(i,jm,k))*(v(i,j,k)+v(im,j,k)))*dyi
-               rhoxp=rhol*0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,j,kp)+phi(im,j,kp))   + rhov*0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,j,kp)+phi(im,j,kp))
-               rhoxm=rhol*0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,j,km)+phi(im,j,km))   + rhov*0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,j,km)+phi(im,j,km))
+               rhoxp=rhol*0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,j,kp)+phi(im,j,kp))   + rhov*(1.d0-0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,j,kp)+phi(im,j,kp)))
+               rhoxm=rhol*0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,j,km)+phi(im,j,km))   + rhov*(1.d0-0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,j,km)+phi(im,j,km)))
                h13 = 0.25d0*(rhoxp*(u(i,j,kp)+u(i,j,k))*(w(i,j,kp)+w(im,j,kp))   - rhoxm*(u(i,j,k)+u(i,j,km))*(w(i,j,k)+w(im,j,k)))*dzci(kg) ! divide by cell height
-               rhoxp=rhol*0.25d0*(phi(i,j,k)+phi(i,jp,k)+phi(ip,jp,k)+phi(ip,j,k))   + rhov*0.25d0*(phi(i,j,k)+phi(i,jp,k)+phi(ip,jp,k)+phi(ip,j,k))
-               rhoxm=rhol*0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(ip,jm,k)+phi(ip,j,k))   + rhov*0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(ip,jm,k)+phi(ip,j,k))
+               rhoxp=rhol*0.25d0*(phi(i,j,k)+phi(i,jp,k)+phi(ip,jp,k)+phi(ip,j,k))   + rhov*(1.d0-0.25d0*(phi(i,j,k)+phi(i,jp,k)+phi(ip,jp,k)+phi(ip,j,k)))
+               rhoxm=rhol*0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(ip,jm,k)+phi(ip,j,k))   + rhov*(1.d0-0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(ip,jm,k)+phi(ip,j,k)))
                h21 = 0.25d0*(rhoxp*(u(ip,j,k)+u(ip,jm,k))*(v(ip,j,k)+v(i,j,k))   - rhoxm*(u(i,j,k)+u(i,jm,k))*(v(i,j,k)+v(im,j,k)))*dxi
                rhoxp=rhol*phi(i,j,k)    + rhov*(1.d0-phi(i,j,k))
                rhoxm=rhol*phi(i,jm,k)   + rhov*(1.d0-phi(i,jm,k))
                h22 = 0.25d0*(rhoxp*(v(i,jp,k)+v(i,j,k))*(v(i,jp,k)+v(i,j,k))     - rhoxm*(v(i,j,k)+v(i,jm,k))*(v(i,j,k)+v(i,jm,k)))*dyi
-               rhoxp=rhol*0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(i,jm,kp)+phi(i,j,kp))   + rhov*0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(i,jm,kp)+phi(i,j,kp))
-               rhoxm=rhol*0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(i,jm,km)+phi(i,j,km))   + rhov*0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(i,jm,km)+phi(i,j,km ))
+               rhoxp=rhol*0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(i,jm,kp)+phi(i,j,kp))   + rhov*(1.d0-0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(i,jm,kp)+phi(i,j,kp)))
+               rhoxm=rhol*0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(i,jm,km)+phi(i,j,km))   + rhov*(1.d0-0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(i,jm,km)+phi(i,j,km )))
                h23 = 0.25d0*(rhoxp*(w(i,j,kp)+w(i,jm,kp))*(v(i,j,kp)+v(i,j,k))   - rhoxm*(w(i,j,k)+w(i,jm,k))*(v(i,j,k)+v(i,j,km)))*dzci(kg) ! divide by cell height
-               rhoxp=rhol*0.25d0*(phi(i,j,k)+phi(i,j,km)+phi(ip,j,k)+phi(ip,j,km))   + rhov*0.25d0*(phi(i,j,k)+phi(i,j,km)+phi(ip,j,k)+phi(ip,j,km)) 
-               rhoxm=rhol*0.25d0*(phi(i,j,k)+phi(i,j,km)+phi(im,j,k)+phi(im,j,km))   + rhov*0.25d0*(phi(i,j,k)+phi(i,j,km)+phi(im,j,k)+phi(im,j,km ))
+               rhoxp=rhol*0.25d0*(phi(i,j,k)+phi(i,j,km)+phi(ip,j,k)+phi(ip,j,km))   + rhov*(1.d0-0.25d0*(phi(i,j,k)+phi(i,j,km)+phi(ip,j,k)+phi(ip,j,km)))
+               rhoxm=rhol*0.25d0*(phi(i,j,k)+phi(i,j,km)+phi(im,j,k)+phi(im,j,km))   + rhov*(1.d0-0.25d0*(phi(i,j,k)+phi(i,j,km)+phi(im,j,k)+phi(im,j,km )))
                h31 = 0.25d0*(rhoxp*(w(ip,j,k)+w(i,j,k))*(u(ip,j,k)+u(ip,j,km))   - rhoxm*(w(i,j,k)+w(im,j,k))*(u(i,j,k)+u(i,j,km)))*dxi
-               rhoxp=rhol*0.25d0*(phi(i,j,k)+phi(i,jp,k)+phi(i,jp,km)+phi(i,j,km))   + rhov*0.25d0*(phi(i,j,k)+phi(i,jp,k)+phi(i,jp,km)+phi(i,j,km)) 
-               rhoxm=rhol*0.25d0*(phi(i,j,k)+phi(i,j,km)+phi(im,j,k)+phi(im,j,km))   + rhov*0.25d0*(phi(i,j,k)+phi(i,j,km)+phi(im,j,k)+phi(im,j,km ))
+               rhoxp=rhol*0.25d0*(phi(i,j,k)+phi(i,jp,k)+phi(i,jp,km)+phi(i,j,km))   + rhov*(1.d0-0.25d0*(phi(i,j,k)+phi(i,jp,k)+phi(i,jp,km)+phi(i,j,km)))
+               rhoxm=rhol*0.25d0*(phi(i,j,k)+phi(i,j,km)+phi(im,j,k)+phi(im,j,km))   + rhov*(1.d0-0.25d0*(phi(i,j,k)+phi(i,j,km)+phi(im,j,k)+phi(im,j,km )))
                h32 = 0.25d0*(rhoxp*(v(i,jp,k)+v(i,jp,km))*(w(i,jp,k)+w(i,j,k))   - rhoxm*(v(i,j,k)+v(i,j,km))*(w(i,j,k)+w(i,jm,k)))*dyi
                rhoxp=rhol*phi(i,j,k)    + rhov*(1.d0-phi(i,j,k))
                rhoxm=rhol*phi(i,j,km)   + rhov*(1.d0-phi(i,j,km))
@@ -903,7 +903,7 @@ do t=tstart,tfin
    ! ########################################################################################################################################
    ! 8.1 Correct velocity 
    ! 8.2 Call halo update
-   ! Correct velocity, pressure has also the halo
+   ! Correct velocity (get new rho*u), pressure has also the halo
    !$acc kernels 
    do k=1+halo_ext, piX%shape(3)-halo_ext
       do j=1+halo_ext, piX%shape(2)-halo_ext
@@ -913,9 +913,9 @@ do t=tstart,tfin
               km=k-1
               kg=piX%lo(3)  + k - 1 - halo_ext
               if (im < 1) im=nx
-              u(i,j,k)=u(i,j,k) - dt/rho*(p(i,j,k)-p(im,j,k))*dxi
-              v(i,j,k)=v(i,j,k) - dt/rho*(p(i,j,k)-p(i,jm,k))*dyi
-              w(i,j,k)=w(i,j,k) - dt/rho*(p(i,j,k)-p(i,j,km))*dzi(kg)
+              u(i,j,k)=u(i,j,k) - dt*(p(i,j,k)-p(im,j,k))*dxi
+              v(i,j,k)=v(i,j,k) - dt*(p(i,j,k)-p(i,jm,k))*dyi
+              w(i,j,k)=w(i,j,k) - dt*(p(i,j,k)-p(i,j,km))*dzi(kg)
           enddo
       enddo
    enddo
@@ -931,9 +931,9 @@ do t=tstart,tfin
    CHECK_CUDECOMP_EXIT(cudecompUpdateHalosX(handle, grid_desc, w, work_halo_d, CUDECOMP_DOUBLE, piX%halo_extents, halo_periods, 3))
    !$acc end host_data 
 
-   ! impose velocity boundary conditions, can be optimized, no real gain
+   ! impose velocity boundary conditions on rho*u, can be optimized, no real gain
    ! w is at the wall, u and v interpolate so that the mean value is zero
-   ! no-slip assumted, i.e. u=0, can be extented to any value
+   ! no-slip assumted, i.e. rho*u=0, can be extented to any value
    umax=0.d0
    vmax=0.d0
    wmax=0.d0
@@ -950,12 +950,42 @@ do t=tstart,tfin
             if (kg .eq. nz)   u(i,j,k+1)=   u(i,j,k)  !  mean value between kg and kg+1 (wall) equal to zero 
             if (kg .eq. nz)   v(i,j,k+1)=   v(i,j,k)  !  mean value between kg and kg+1 (wall) equal to zero 
             if (kg .eq. nz)   w(i,j,k+1)=   w(i,j,k)  !  outled BCs
+         enddo
+      enddo
+   enddo
+
+
+   !$acc kernels 
+   do k=1+halo_ext, piX%shape(3)-halo_ext
+      do j=1+halo_ext, piX%shape(2)-halo_ext
+         do i = 1, piX%shape(1) ! equal to nx (no halo on x)
+              im=i-1
+              jm=j-1
+              km=k-1
+              if (im < 1) im=nx
+              rhox=rhol*0.5d0*(phi(i,j,k)+phi(im,j,k)) + rhov*(1.d0-0.5d0*(phi(i,j,k)+phi(im,j,k)))
+              u(i,j,k)=u(i,j,k)/rhox
+              rhox=rhol*0.5d0*(phi(i,j,k)+phi(i,jm,k)) + rhov*(1.d0-0.5d0*(phi(i,j,k)+phi(i,jm,k)))
+              v(i,j,k)=v(i,j,k)/rhox
+              rhox=rhol*0.5d0*(phi(i,j,k)+phi(i,j,km)) + rhov*(1.d0-0.5d0*(phi(i,j,k)+phi(i,j,km)))
+              w(i,j,k)=w(i,j,k)/rhox
+          enddo
+      enddo
+   enddo
+
+   umax=0.d0
+   vmax=0.d0
+   wmax=0.d0
+   do k=1, piX%shape(3)
+      do j=1, piX%shape(2)
+         do i=1,nx
             umax=max(umax,u(i,j,k))
             vmax=max(vmax,v(i,j,k))
             wmax=max(wmax,w(i,j,k))
          enddo
       enddo
    enddo
+   !$acc end kernels 
 
    call MPI_Allreduce(umax,gumax,1,MPI_DOUBLE_PRECISION,MPI_MAX,MPI_COMM_WORLD, ierr)
    call MPI_Allreduce(vmax,gvmax,1,MPI_DOUBLE_PRECISION,MPI_MAX,MPI_COMM_WORLD, ierr)
