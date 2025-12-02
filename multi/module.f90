@@ -5,13 +5,13 @@ module param
     double precision :: pi, rhoi, twopi
     double precision :: lx, dx, dxi, ddxi 
     double precision :: ly, dy, dyi, ddyi
-    double precision :: lz
-    double precision, allocatable :: x(:), y(:), z(:), dzi(:), dzci(:), kx(:), ky(:)
+    double precision :: lz, dz, dzi, ddzi
+    double precision, allocatable :: x(:), y(:), z(:), kx(:), ky(:)
     double precision, device, allocatable :: kx_d(:), ky_d(:)
     integer :: restart,tstart,tfin,dump
     double precision :: gamma, normod, factor, csi
     double precision :: dt, mul, muv, rhol, rhov, vaprate !flow parameters
-    double precision :: rhoxp, rhoxm, rhox
+    double precision :: rhoxp, rhoxm, rhox, mu
     integer :: inflow, inphi, intheta
     double precision :: radius, sigma, epsr, eps, pos, val, epsi, enum ! phase-field parameters
     double precision :: times, timef, alphag

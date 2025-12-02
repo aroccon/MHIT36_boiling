@@ -432,14 +432,14 @@ do t=tstart,tfin
             rhsphi(i,j,k) =   &
                   - (u(ip,j,k)*0.5d0*(phi(ip,j,k)+phi(i,j,k)) - u(i,j,k)*0.5d0*(phi(i,j,k)+phi(im,j,k)))*dxi   &  
                   - (v(i,jp,k)*0.5d0*(phi(i,jp,k)+phi(i,j,k)) - v(i,j,k)*0.5d0*(phi(i,j,k)+phi(i,jm,k)))*dyi   &  
-                  - (w(i,j,kp)*0.5d0*(phi(i,j,kp)+phi(i,j,k)) - w(i,j,k)*0.5d0*(phi(i,j,k)+phi(i,j,km)))*dzci(kg)  &  
+                  - (w(i,j,kp)*0.5d0*(phi(i,j,kp)+phi(i,j,k)) - w(i,j,k)*0.5d0*(phi(i,j,k)+phi(i,j,km)))*dzi  &  
                         + gamma*(eps*(phi(ip,j,k)-2.d0*phi(i,j,k)+phi(im,j,k))*ddxi + &                   
                                  eps*(phi(i,jp,k)-2.d0*phi(i,j,k)+phi(i,jm,k))*ddyi + &                   
-                                 eps*((phi(i,j,kp)-phi(i,j,k))*dzi(kg+1) - (phi(i,j,k) -phi(i,j,km))*dzi(kg))*dzci(kg))     ! first between centers and then betwenn faces                
+                                 eps*(phi(i,j,kp)-2.d0*phi(i,j,k)+phi(i,j,km)))*ddzi                
             ! Compute normals for sharpening term (gradient)
             normx(i,j,k) = 0.5d0*(psidi(ip,j,k) - psidi(im,j,k))*dxi
             normy(i,j,k) = 0.5d0*(psidi(i,jp,k) - psidi(i,jm,k))*dyi
-            normz(i,j,k) =       (psidi(i,j,kp) - psidi(i,j,km))/(z(kg+1)-z(kg-1))
+            normz(i,j,k) =       (psidi(i,j,kp) - psidi(i,j,km))*dzi
          enddo
       enddo
    enddo
@@ -484,11 +484,11 @@ do t=tstart,tfin
             if (ip .gt. nx) ip=1
             if (im .lt. 1) im=nx
             rhsphi(i,j,k)=rhsphi(i,j,k)-gamma*((0.25d0*(1.d0-tanh_psi(ip,j,k)*tanh_psi(ip,j,k))*normx(ip,j,k) - &
-                                                0.25d0*(1.d0-tanh_psi(im,j,k)*tanh_psi(im,j,k))*normx(im,j,k))*0.5*dxi + &
+                                                0.25d0*(1.d0-tanh_psi(im,j,k)*tanh_psi(im,j,k))*normx(im,j,k))*0.5d0*dxi + &
                                                (0.25d0*(1.d0-tanh_psi(i,jp,k)*tanh_psi(i,jp,k))*normy(i,jp,k) - &
-                                                0.25d0*(1.d0-tanh_psi(i,jm,k)*tanh_psi(i,jm,k))*normy(i,jm,k))*0.5*dyi + &
+                                                0.25d0*(1.d0-tanh_psi(i,jm,k)*tanh_psi(i,jm,k))*normy(i,jm,k))*0.5d0*dyi + &
                                                (0.25d0*(1.d0-tanh_psi(i,j,kp)*tanh_psi(i,j,kp))*normz(i,j,kp) - &
-                                                0.25d0*(1.d0-tanh_psi(i,j,km)*tanh_psi(i,j,km))*normz(i,j,km))/(z(kg+1)-z(kg-1))) + &
+                                                0.25d0*(1.d0-tanh_psi(i,j,km)*tanh_psi(i,j,km))*normz(i,j,km))*0.d0*dzi) + &
                                                + phi(i,j,k)*(1.d0-phi(i,j,k))*epsi*vaprate/rhov ! vaporization source term
          enddo
       enddo
@@ -540,12 +540,11 @@ do t=tstart,tfin
                rhstheta(i,j,k) = &
                      - (u(ip,j,k)*0.5d0*(theta(ip,j,k)+theta(i,j,k)) - u(i,j,k)*0.5d0*(theta(i,j,k)+theta(im,j,k)))*dxi &
                      - (v(i,jp,k)*0.5d0*(theta(i,jp,k)+theta(i,j,k)) - v(i,j,k)*0.5d0*(theta(i,j,k)+theta(i,jm,k)))*dyi &
-                     - (w(i,j,kp)*0.5d0*(theta(i,j,kp)+theta(i,j,k)) - w(i,j,k)*0.5d0*(theta(i,j,k)+theta(i,j,km)))*dzci(kg)
+                     - (w(i,j,kp)*0.5d0*(theta(i,j,kp)+theta(i,j,k)) - w(i,j,k)*0.5d0*(theta(i,j,k)+theta(i,j,km)))*ddzi
                ! diffusive terms
                rhstheta(i,j,k) = rhstheta(i,j,k) + kappa*((theta(ip,j,k)-2.d0*theta(i,j,k)+theta(im,j,k))*ddxi + &
                                                           (theta(i,jp,k)-2.d0*theta(i,j,k)+theta(i,jm,k))*ddyi + &
-                                                          ((theta(i,j,kp)-theta(i,j,k))*dzi(kg+1) - (theta(i,j,k) -theta(i,j,km))*dzi(kg))*dzci(kg))  
-
+                                                          (theta(i,j,kp)-2.d0*theta(i,j,k)+theta(i,j,km))*ddzi)
                enddo
          enddo
       enddo
@@ -615,7 +614,7 @@ do t=tstart,tfin
                h12 = 0.25d0*(rhoxp*(u(i,jp,k)+u(i,j,k))*(v(i,jp,k)+v(im,jp,k))   - rhoxm*(u(i,j,k)+u(i,jm,k))*(v(i,j,k)+v(im,j,k)))*dyi
                rhoxp=rhol*0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,j,kp)+phi(im,j,kp))   + rhov*(1.d0-0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,j,kp)+phi(im,j,kp)))
                rhoxm=rhol*0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,j,km)+phi(im,j,km))   + rhov*(1.d0-0.25d0*(phi(i,j,k)+phi(im,j,k)+phi(i,j,km)+phi(im,j,km)))
-               h13 = 0.25d0*(rhoxp*(u(i,j,kp)+u(i,j,k))*(w(i,j,kp)+w(im,j,kp))   - rhoxm*(u(i,j,k)+u(i,j,km))*(w(i,j,k)+w(im,j,k)))*dzci(kg) ! divide by cell height
+               h13 = 0.25d0*(rhoxp*(u(i,j,kp)+u(i,j,k))*(w(i,j,kp)+w(im,j,kp))   - rhoxm*(u(i,j,k)+u(i,j,km))*(w(i,j,k)+w(im,j,k)))*dzi 
                rhoxp=rhol*0.25d0*(phi(i,j,k)+phi(i,jp,k)+phi(ip,jp,k)+phi(ip,j,k))   + rhov*(1.d0-0.25d0*(phi(i,j,k)+phi(i,jp,k)+phi(ip,jp,k)+phi(ip,j,k)))
                rhoxm=rhol*0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(ip,jm,k)+phi(ip,j,k))   + rhov*(1.d0-0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(ip,jm,k)+phi(ip,j,k)))
                h21 = 0.25d0*(rhoxp*(u(ip,j,k)+u(ip,jm,k))*(v(ip,j,k)+v(i,j,k))   - rhoxm*(u(i,j,k)+u(i,jm,k))*(v(i,j,k)+v(im,j,k)))*dxi
@@ -624,7 +623,7 @@ do t=tstart,tfin
                h22 = 0.25d0*(rhoxp*(v(i,jp,k)+v(i,j,k))*(v(i,jp,k)+v(i,j,k))     - rhoxm*(v(i,j,k)+v(i,jm,k))*(v(i,j,k)+v(i,jm,k)))*dyi
                rhoxp=rhol*0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(i,jm,kp)+phi(i,j,kp))   + rhov*(1.d0-0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(i,jm,kp)+phi(i,j,kp)))
                rhoxm=rhol*0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(i,jm,km)+phi(i,j,km))   + rhov*(1.d0-0.25d0*(phi(i,j,k)+phi(i,jm,k)+phi(i,jm,km)+phi(i,j,km )))
-               h23 = 0.25d0*(rhoxp*(w(i,j,kp)+w(i,jm,kp))*(v(i,j,kp)+v(i,j,k))   - rhoxm*(w(i,j,k)+w(i,jm,k))*(v(i,j,k)+v(i,j,km)))*dzci(kg) ! divide by cell height
+               h23 = 0.25d0*(rhoxp*(w(i,j,kp)+w(i,jm,kp))*(v(i,j,kp)+v(i,j,k))   - rhoxm*(w(i,j,k)+w(i,jm,k))*(v(i,j,k)+v(i,j,km)))*dzi 
                rhoxp=rhol*0.25d0*(phi(i,j,k)+phi(i,j,km)+phi(ip,j,k)+phi(ip,j,km))   + rhov*(1.d0-0.25d0*(phi(i,j,k)+phi(i,j,km)+phi(ip,j,k)+phi(ip,j,km)))
                rhoxm=rhol*0.25d0*(phi(i,j,k)+phi(i,j,km)+phi(im,j,k)+phi(im,j,km))   + rhov*(1.d0-0.25d0*(phi(i,j,k)+phi(i,j,km)+phi(im,j,k)+phi(im,j,km )))
                h31 = 0.25d0*(rhoxp*(w(ip,j,k)+w(i,j,k))*(u(ip,j,k)+u(ip,j,km))   - rhoxm*(w(i,j,k)+w(im,j,k))*(u(i,j,k)+u(i,j,km)))*dxi
@@ -633,20 +632,26 @@ do t=tstart,tfin
                h32 = 0.25d0*(rhoxp*(v(i,jp,k)+v(i,jp,km))*(w(i,jp,k)+w(i,j,k))   - rhoxm*(v(i,j,k)+v(i,j,km))*(w(i,j,k)+w(i,jm,k)))*dyi
                rhoxp=rhol*phi(i,j,k)    + rhov*(1.d0-phi(i,j,k))
                rhoxm=rhol*phi(i,j,km)   + rhov*(1.d0-phi(i,j,km))
-               h33 = 0.25d0*(rhoxp*(w(i,j,kp)+w(i,j,k))*(w(i,j,kp)+w(i,j,k))     - rhoxm*(w(i,j,k)+w(i,j,km))*(w(i,j,k)+w(i,j,km)))*dzi(kg) ! divie by distance between centers
+               h33 = 0.25d0*(rhoxp*(w(i,j,kp)+w(i,j,k))*(w(i,j,kp)+w(i,j,k))     - rhoxm*(w(i,j,k)+w(i,j,km))*(w(i,j,k)+w(i,j,km)))*dzi ! divie by distance between centers
                rhsu(i,j,k)=-(h11+h12+h13)
                rhsv(i,j,k)=-(h21+h22+h23)
                rhsw(i,j,k)=-(h31+h32+h33)
                ! viscous/diffusive terms
+               ! compute viscosity at u collocation point and then the three contributions
+               mu=mul*0.5d0*(phi(i,j,k)+phi(im,j,k)) + muv*(1.d0-0.5d0*(phi(i,j,k)+phi(im,j,k)))
                h11 = mu*(u(ip,j,k)-2.d0*u(i,j,k)+u(im,j,k))*ddxi
                h12 = mu*(u(i,jp,k)-2.d0*u(i,j,k)+u(i,jm,k))*ddyi
-               h13 = mu*((u(i,j,kp)-u(i,j,k))*dzi(kg+1)-(u(i,j,k)-u(i,j,km))*dzi(kg))*dzci(kg)
+               h13 = mu*(u(i,j,kp)-2.d0*u(i,j,k)+u(i,j,km))*ddzi
+               ! compute viscosity at v collocation point and then the three contributions
+               mu=mul*0.5d0*(phi(i,j,k)+phi(i,jm,k)) + muv*(1.d0-0.5d0*(phi(i,j,k)+phi(i,jm,k)))
                h21 = mu*(v(ip,j,k)-2.d0*v(i,j,k)+v(im,j,k))*ddxi
                h22 = mu*(v(i,jp,k)-2.d0*v(i,j,k)+v(i,jm,k))*ddyi
-               h23 = mu*((v(i,j,kp)-v(i,j,k))*dzi(kg+1)-(v(i,j,k)-v(i,j,km))*dzi(kg))*dzci(kg)
+               h23 = mu*(v(i,j,kp)-2.d0*v(i,j,k)+v(i,j,km))*ddzi
+               ! compute viscosity at w collocation point and then the three contributions
+               mu=mul*0.5d0*(phi(i,j,k)+phi(i,j,km)) + muv*(1.d0-0.5d0*(phi(i,j,k)+phi(i,j,km)))
                h31 = mu*(w(ip,j,k)-2.d0*w(i,j,k)+w(im,j,k))*ddxi
                h32 = mu*(w(i,jp,k)-2.d0*w(i,j,k)+w(i,jm,k))*ddyi
-               h33 = mu*((w(i,j,kp)-w(i,j,k))*dzci(kg+1)-(w(i,j,k)-w(i,j,km))*dzci(kg))*dzi(kg) ! face to face and then center to center
+               h33 = mu*(w(i,j,kp)-2.d0*w(i,j,k)+w(i,j,km))*ddzi ! face to face and then center to center
                rhsu(i,j,k)=rhsu(i,j,k)+(h11+h12+h13)*rhoi
                rhsv(i,j,k)=rhsv(i,j,k)+(h21+h22+h23)*rhoi
                rhsw(i,j,k)=rhsw(i,j,k)+(h31+h32+h33)*rhoi               
@@ -672,10 +677,11 @@ do t=tstart,tfin
                kg=piX%lo(3) + k - 1 - halo_ext
                if (ip .gt. nx) ip=1
                if (im .lt. 1) im=nx
-               curv=0.5d0*(normx(ip,j,k)-normx(im,j,k))*dxi + 0.5d0*(normy(i,jp,k)-normy(i,jm,k))*dyi + (normz(i,j,kp)-normz(i,j,km))/(z(kg+1)-z(kg-1))
+               curv=0.5d0*(normx(ip,j,k)-normx(im,j,k))*dxi + 0.5d0*(normy(i,jp,k)-normy(i,jm,k))*dyi + 0.5d0*(normz(i,j,kp)-normz(i,j,km))*dzi
                fxst(i,j,k)= -sigma*curv*0.5d0*(phi(ip,j,k)-phi(im,j,k))*dxi
                fyst(i,j,k)= -sigma*curv*0.5d0*(phi(i,jp,k)-phi(i,jm,k))*dyi
-               fzst(i,j,k)= -sigma*curv*(phi(i,j,kp)-phi(i,j,km))/(z(kg+1)-z(kg-1))
+               fzst(i,j,k)= -sigma*curv*0.5d0*(phi(i,j,kp)-phi(i,j,km))*dzi
+      
             enddo
          enddo
       enddo
@@ -782,9 +788,9 @@ do t=tstart,tfin
             kp=k+1
             kg = piX%lo(3)  + k - 1 - halo_ext
             if (ip > nx) ip=1
-            rhsp(i,j,k) =                    (dxi/dt)*(u(ip,j,k)-u(i,j,k))
-            rhsp(i,j,k) = rhsp(i,j,k) +      (dyi/dt)*(v(i,jp,k)-v(i,j,k))
-            rhsp(i,j,k) = rhsp(i,j,k) + (dzci(kg)/dt)*(w(i,j,kp)-w(i,j,k))
+            rhsp(i,j,k) =               (dxi/dt)*(u(ip,j,k)-u(i,j,k))
+            rhsp(i,j,k) = rhsp(i,j,k) + (dyi/dt)*(v(i,jp,k)-v(i,j,k))
+            rhsp(i,j,k) = rhsp(i,j,k) + (dzi/dt)*(w(i,j,kp)-w(i,j,k))
             rhsp(i,j,k) = rhsp(i,j,k) - phi(i,j,k)*(1.d0-phi(i,j,k))*epsi*vaprate*(1.d0-rhov/rhol)
          enddo
       enddo
@@ -829,19 +835,19 @@ do t=tstart,tfin
          ! Fill diagonals and rhs for each
          ! 0 and ny+1 are the ghost nodes
          do k = 1, nz
-            a(k) =  2.0d0*(dzi(k)**2*dzi(k+1))/(dzi(k)+dzi(k+1))
-            c(k) =  2.0d0*(dzi(k)*dzi(k+1)**2)/(dzi(k)+dzi(k+1))
+            a(k) =  2.0d0*dzi*dzi
+            c(k) =  2.0d0*dzi*dzi
             b(k) = -a(k) - c(k) - (kx_d(ig)**2 + ky_d(jg)**2)
             d(k) =  psi3d(k,il,jl)
          enddo
          ! Neumann BC at bottom
          a(0) =  0.0d0
-         b(0) = -1.d0*dzi(1)*dzi(1) - kx_d(ig)*kx_d(ig) - ky_d(jg)*ky_d(jg)
-         c(0) =  1.d0*dzi(1)*dzi(1)
+         b(0) = -1.d0 !- kx_d(ig)*kx_d(ig) - ky_d(jg)*ky_d(jg)
+         c(0) =  1.d0
          d(0) =  0.0d0
          ! Imposed pressure at the top
-         a(nz+1) =  1.0d0*dzi(nz+1)*dzi(nz+1)
-         b(nz+1) =  1.0d0*dzi(nz+1)*dzi(nz+1) - kx_d(ig)*kx_d(ig) - ky_d(jg)*ky_d(jg)
+         a(nz+1) =  1.0d0
+         b(nz+1) =  1.0d0 !- kx_d(ig)*kx_d(ig) - ky_d(jg)*ky_d(jg)
          c(nz+1) =  0.0d0
          d(nz+1) =  0.0d0 ! 0 pressure at the top
          !$acc loop seq
@@ -915,7 +921,7 @@ do t=tstart,tfin
               if (im < 1) im=nx
               u(i,j,k)=u(i,j,k) - dt*(p(i,j,k)-p(im,j,k))*dxi
               v(i,j,k)=v(i,j,k) - dt*(p(i,j,k)-p(i,jm,k))*dyi
-              w(i,j,k)=w(i,j,k) - dt*(p(i,j,k)-p(i,j,km))*dzi(kg)
+              w(i,j,k)=w(i,j,k) - dt*(p(i,j,k)-p(i,j,km))*dzi
           enddo
       enddo
    enddo
@@ -993,7 +999,7 @@ do t=tstart,tfin
 
    cflx=gumax*dt*dxi
    cfly=gvmax*dt*dyi
-   cflz=gwmax*dt*lz/nz
+   cflz=gwmax*dt*dzi
    cou=max(cflx,cfly)
    cou=max(cou,gcflz)
    if (rank.eq.0) then

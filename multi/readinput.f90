@@ -21,7 +21,6 @@ read(55,*) dump
 read(55,*) lx
 read(55,*) ly
 read(55,*) lz
-read(55,*) csi
 !Flow parameters
 read(55,*) inflow
 read(55,*) inphi
@@ -49,15 +48,16 @@ twopi=8.0_8*atan(1.0_8)
 pi=twopi/2.d0
 dx = lx/nx
 dy = ly/ny
+dz = lz/nz
 dxi = 1.d0/dx
 dyi = 1.d0/dy
+dzi = 1.d0/dz
 ddxi = 1.d0/dx/dx
 ddyi = 1.d0/dy/dy
-rhoi=1.d0/rho
+ddzi = 1.d0/dz/dz
 eps=epsr*dx
 epsi=1.d0/eps
 enum=1.e-16
-!write(*,*) "Check on stability", dt*mu*dzi*dzi
 
 if (rank .eq. 0) then
     !enable/disable for debug check parameters
@@ -76,8 +76,11 @@ if (rank .eq. 0) then
     write(*,*) "Dump      ", dump
     write(*,*) "Inflow    ", inflow
     write(*,*) "Deltat    ", dt
-    write(*,*) "Mu        ", mu
-    write(*,*) "Rho       ", rho
+    write(*,*) "Mul       ", mul
+    write(*,*) "Muv       ", muv
+    write(*,*) "Rhol      ", rhol
+    write(*,*) "Rhov      ", rhov   
+    write(*,*) "Vaprate   ", vaprate
     write(*,*) "Gradpx    ", gradpx
     write(*,*) "Gradpy    ", gradpy
     write(*,*) "Radius    ", radius
@@ -89,22 +92,22 @@ if (rank .eq. 0) then
     write(*,*) "Ly        ", ly
     write(*,*) "Lz        ", lz
     write(*,*) "Z-stretch ", csi
-!    write(*,*) "dx", dx
-!    write(*,*) "dxi", dxi
-!    write(*,*) "ddxi", ddxi
-!    write(*,*) "dy", dx
-!    write(*,*) "dyi", dyi
-!    write(*,*) "ddyi", ddyi
-!    write(*,*) "dz", dz
-!    write(*,*) "dzi", dzi
-!    write(*,*) "ddzi", ddzi
+    write(*,*) "dx", dx
+    write(*,*) "dxi", dxi
+    write(*,*) "ddxi", ddxi
+    write(*,*) "dy", dx
+    write(*,*) "dyi", dyi
+    write(*,*) "ddyi", ddyi
+    write(*,*) "dz", dz
+    write(*,*) "dzi", dzi
+    write(*,*) "ddzi", ddzi
 endif
 
 
 
 ! define wavenumbers and grid points axis
 ! define grid (then move in readinput)
-allocate(x(nx),y(ny),z(0:nz+1),dzci(nz),dzi(nz+1),kx(nx),ky(ny))
+allocate(x(nx),y(ny),z(nz),kx(nx),ky(ny))
 ! location of the pressure nodes (cell centers)
 x(1)=dx/2
 do i = 2, nx
@@ -114,26 +117,10 @@ y(1)=dy/2
 do j = 2, ny
    y(j) = y(j-1) + dy
 enddo
-! stretched grid along z; z axis include also the two ghost nodes located at +/- dz/2 above and below the wall
-do k = 1, nz
-  zk=(dble(k)-0.5d0)/dble(nz)         
-  z(k) = 0.5d0*dble(lz)*(1.d0+tanh(csi*(zk-0.5d0))/tanh(0.5d0*csi))
+z(1)=dz/2 
+do i = 2, nz
+   z(i) = z(i-1) + dz
 enddo
-z(0)=-z(1)
-z(nz+1)= lz+(lz-z(nz))
-! compute inverse of dz (between cell faces)
-dzci(1) = 2.d0/(z(1)+ z(2))
-dzci(nz) = 1.d0/(lz-0.5d0*(z(nz)+z(nz-1)))
-do k = 2, nz-1
-   dzci(k) = 2.d0/(z(k+1)-z(k-1))
-enddo
-! compute inverse of dz (between nodes)
-dzi(1)=0.5d0/z(1)
-!dzi(nz+1)=0.5d0/(lz-z(nz))
-do k=1, nz+1
-   dzi(k) = 1.d0/(z(k)-z(k-1))
-enddo
-!write(*,*) "dzi", dzi
 ! wavenumber
 do i = 1, nx/2
    kx(i) = (i-1)*(twopi/lx)
