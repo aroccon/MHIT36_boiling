@@ -71,7 +71,7 @@ if (fieldn .eq. 3) then
 endif
 
 if (fieldn .eq. 4) then
-  out=p(1:nx,1+halo_ext:piX%shape(2)-halo_ext,1+halo_ext:piX%shape(3)-halo_ext) !<- out only the inner parts (no halo)
+  out=rhsp(1:nx,1+halo_ext:piX%shape(2)-halo_ext,1+halo_ext:piX%shape(3)-halo_ext) !<- out only the inner parts (no halo)
   write(namefile,'(a,i8.8,a)') './output/p_',t,'.dat'
   call mpi_file_open(MPI_COMM_WORLD,namefile,mpi_mode_create+mpi_mode_rdwr,mpi_info_null,f_handle,ierr)
   call mpi_type_create_subarray(3,g_size,p_size,fstart,mpi_order_fortran,mpi_double_precision,ftype,ierr)

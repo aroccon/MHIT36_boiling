@@ -314,6 +314,16 @@ CHECK_CUDECOMP_EXIT(cudecompUpdateHalosX(handle, grid_desc, phi, work_halo_d, CU
 CHECK_CUDECOMP_EXIT(cudecompUpdateHalosX(handle, grid_desc, phi, work_halo_d, CUDECOMP_DOUBLE, piX%halo_extents, halo_periods, 3))
 !$acc end host_data 
 #endif
+do k=1, piX%shape(3)
+   do j=1, piX%shape(2)
+      do i=1,nx
+         kg = piX%lo(3) + k - 1 -halo_ext            
+         ! bottom and top walls
+         if (kg .eq. 1)    phi(i,j,k-1)=phi(i,j,k)  !  mean value between kg and kg-1 (wall) equal to zero  
+         if (kg .eq. nz)   phi(i,j,k+1)=phi(i,j,k)  !  mean value between kg and kg+1 (wall) equal to zero 
+      enddo
+   enddo
+enddo  
 
 ! initialize temperature field
 #if thetaflag == 1
@@ -435,11 +445,11 @@ do t=tstart,tfin
                   - (w(i,j,kp)*0.5d0*(phi(i,j,kp)+phi(i,j,k)) - w(i,j,k)*0.5d0*(phi(i,j,k)+phi(i,j,km)))*dzi  &  
                         + gamma*(eps*(phi(ip,j,k)-2.d0*phi(i,j,k)+phi(im,j,k))*ddxi + &                   
                                  eps*(phi(i,jp,k)-2.d0*phi(i,j,k)+phi(i,jm,k))*ddyi + &                   
-                                 eps*(phi(i,j,kp)-2.d0*phi(i,j,k)+phi(i,j,km)))*ddzi                
+                                 eps*(phi(i,j,kp)-2.d0*phi(i,j,k)+phi(i,j,km))*ddzi)                
             ! Compute normals for sharpening term (gradient)
             normx(i,j,k) = 0.5d0*(psidi(ip,j,k) - psidi(im,j,k))*dxi
             normy(i,j,k) = 0.5d0*(psidi(i,jp,k) - psidi(i,jm,k))*dyi
-            normz(i,j,k) =       (psidi(i,j,kp) - psidi(i,j,km))*dzi
+            normz(i,j,k) = 0.5d0*(psidi(i,j,kp) - psidi(i,j,km))*dzi
          enddo
       enddo
    enddo
@@ -510,6 +520,19 @@ do t=tstart,tfin
    CHECK_CUDECOMP_EXIT(cudecompUpdateHalosX(handle, grid_desc, phi, work_halo_d, CUDECOMP_DOUBLE, piX%halo_extents, halo_periods, 2))
    CHECK_CUDECOMP_EXIT(cudecompUpdateHalosX(handle, grid_desc, phi, work_halo_d, CUDECOMP_DOUBLE, piX%halo_extents, halo_periods, 3))
    !$acc end host_data 
+   
+   ! impose phase-field boundary conditions (no-slip at top and bottom walls, periodic in x and y)
+   !$acc parallel loop collapse(3)
+   do k=1, piX%shape(3)
+      do j=1, piX%shape(2)
+         do i=1,nx
+            kg = piX%lo(3) + k - 1 -halo_ext            
+            ! bottom and top walls
+            if (kg .eq. 1)    phi(i,j,k-1)=phi(i,j,k)  !  mean value between kg and kg-1 (wall) equal to zero  
+            if (kg .eq. nz)   phi(i,j,k+1)=phi(i,j,k)  !  mean value between kg and kg+1 (wall) equal to zero 
+         enddo
+      enddo
+   enddo  
    #endif
    !########################################################################################################################################
    ! END STEP 4: PHASE-FIELD SOLVER (EXPLICIT)
@@ -656,8 +679,8 @@ do t=tstart,tfin
                rhsv(i,j,k)=rhsv(i,j,k)+(h21+h22+h23)*rhoi
                rhsw(i,j,k)=rhsw(i,j,k)+(h31+h32+h33)*rhoi               
                ! Pressure driven
-               rhsu(i,j,k)=rhsu(i,j,k) - gradpx
-               rhsv(i,j,k)=rhsv(i,j,k) - gradpy
+               !rhsu(i,j,k)=rhsu(i,j,k) - gradpx
+               !rhsv(i,j,k)=rhsv(i,j,k) - gradpy
             enddo
          enddo
       enddo
@@ -681,7 +704,6 @@ do t=tstart,tfin
                fxst(i,j,k)= -sigma*curv*0.5d0*(phi(ip,j,k)-phi(im,j,k))*dxi
                fyst(i,j,k)= -sigma*curv*0.5d0*(phi(i,jp,k)-phi(i,jm,k))*dyi
                fzst(i,j,k)= -sigma*curv*0.5d0*(phi(i,j,kp)-phi(i,j,km))*dzi
-      
             enddo
          enddo
       enddo
@@ -842,12 +864,12 @@ do t=tstart,tfin
          enddo
          ! Neumann BC at bottom
          a(0) =  0.0d0
-         b(0) = -1.d0 !- kx_d(ig)*kx_d(ig) - ky_d(jg)*ky_d(jg)
-         c(0) =  1.d0
+         b(0) = -1.d0!*dzi*dzi !- kx_d(ig)*kx_d(ig) - ky_d(jg)*ky_d(jg)
+         c(0) =  1.d0!*dzi*dzi
          d(0) =  0.0d0
          ! Imposed pressure at the top
-         a(nz+1) =  1.0d0
-         b(nz+1) =  1.0d0 !- kx_d(ig)*kx_d(ig) - ky_d(jg)*ky_d(jg)
+         a(nz+1) =  1.0d0!*dzi*dzi
+         b(nz+1) =  1.0d0!*dzi*dzi !- kx_d(ig)*kx_d(ig) - ky_d(jg)*ky_d(jg)
          c(nz+1) =  0.0d0
          d(nz+1) =  0.0d0 ! 0 pressure at the top
          !$acc loop seq
